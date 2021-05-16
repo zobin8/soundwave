@@ -6,10 +6,11 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import kotlin.math.*
 
-class JavaGraphicsManager : GraphicsManager {
+class OpenGLGraphicsManager : GraphicsManager {
     private var errorCallback: GLFWErrorCallback = GLFWErrorCallback.createPrint()
     private var window: Long = 0
     private var eventQueue: MutableList<KeyEvent> = ArrayList()
+    private lateinit var fontManager: OpenGLFontManager
 
     override fun terminate() {
         Callbacks.glfwFreeCallbacks(window)
@@ -44,6 +45,9 @@ class JavaGraphicsManager : GraphicsManager {
         GLFW.glfwSwapInterval(1)
         GLFW.glfwShowWindow(window)
         GL.createCapabilities()
+
+        fontManager = OpenGLFontManager(256)
+        fontManager.init()
     }
 
     override fun getDelta(): Double {
@@ -53,6 +57,7 @@ class JavaGraphicsManager : GraphicsManager {
     }
 
     override fun render() {
+        fontManager.drawString("Sphinx of black quartz, judge my vow.", Vector2D(-1.0, 0.0), Vector2D(2.0, 1.0))
         GLFW.glfwSwapBuffers(window)
         GLFW.glfwPollEvents()
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)

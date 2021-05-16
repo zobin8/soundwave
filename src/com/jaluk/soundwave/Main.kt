@@ -9,7 +9,7 @@ fun main(args : Array<String>) {
     level.init()
     val auto = args.size > 1 && args[1] == "auto"
 
-    val gm: GraphicsManager = JavaGraphicsManager()
+    val gm: GraphicsManager = OpenGLGraphicsManager()
     val gs = StatePlaying(level, reader, auto)
     val gb = GameBoard()
     val engine = GameEngine(gm, StateTransition(gs), gb)
