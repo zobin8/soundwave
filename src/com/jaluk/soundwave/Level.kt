@@ -197,7 +197,7 @@ class Level(private val reader: AudioReader) {
             val appearPos = (GraphicsConstants.SIZE / 2.0) + lastAppearDir * (GraphicsConstants.SIZE.norm() + 1.0)
             val velDir = (popPos - appearPos).normalized()
             val vel = velDir * noteSpeed
-            val appearTime = popTime - (appearPos - popPos).norm() / noteSpeed
+            val appearTime = popTime - (appearPos - popPos).norm() / vel.norm()
 
             val b = Bubble(appearPos, vel, 1.0, tunes[n.frequency])
             b.popPos = popPos

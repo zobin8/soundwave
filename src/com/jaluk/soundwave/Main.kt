@@ -3,7 +3,7 @@ package com.jaluk.soundwave
 import java.io.File
 
 fun main(args : Array<String>) {
-    val reader = WAVReader()
+    val reader = constructAudioReader(args[0])!!
     reader.readFile(File(args[0]))
     val level = Level(reader)
     level.init()

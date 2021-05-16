@@ -4,3 +4,4 @@ gradlew.bat
 out
 *.wav
 .idea/misc.xml
+*.mp3
