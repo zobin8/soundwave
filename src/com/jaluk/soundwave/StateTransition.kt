@@ -8,8 +8,7 @@ class StateTransition(private val nextState: GameState): GameState {
         if (!initialized) {
             initialized = true
             val center = GraphicsConstants.SIZE / 2.0
-            val speed = Vector2D(transitionSpeed, transitionSpeed)
-            board.addTransition(Ripple(center, speed, 0.0, Drawable.Tune.T1))
+            board.addTransition(Ripple(center, transitionSpeed, 0.0, Drawable.Tune.T1))
         }
 
         board.update(delta)

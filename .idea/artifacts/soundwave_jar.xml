@@ -150,6 +150,9 @@
       <element id="extracted-dir" path="$PROJECT_DIR$/lwjgl/lwjgl-remotery-natives-linux.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lwjgl/lwjgl-rpmalloc-natives-linux.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lwjgl/lwjgl-libdivide-natives-linux.jar" path-in-jar="/" />
+      <element id="file-copy" path="$PROJECT_DIR$/plugins/jlayer-1.0.1.4.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/plugins/mp3spi.jar" />
+      <element id="file-copy" path="$PROJECT_DIR$/plugins/tritonus-share-0.3.7.4.jar" />
     </root>
   </artifact>
 </component>

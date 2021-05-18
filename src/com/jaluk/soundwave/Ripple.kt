@@ -2,7 +2,7 @@ package com.jaluk.soundwave
 
 import kotlin.math.max
 
-class Ripple(var pos: Vector2D, val vel: Vector2D, var radius: Double, val tune: Drawable.Tune): Drawable {
+class Ripple(var pos: Vector2D, val speed: Double, var radius: Double, val tune: Drawable.Tune): Drawable {
     private var dead = false
     var isTransition = false
 
@@ -11,7 +11,7 @@ class Ripple(var pos: Vector2D, val vel: Vector2D, var radius: Double, val tune:
     }
 
     override fun update(delta: Double) {
-        radius += vel.norm() * delta * 2
+        radius += speed * delta
         val corners = arrayOf(Vector2D(), Vector2D(0.0, GraphicsConstants.SIZE.y),
             Vector2D(GraphicsConstants.SIZE.x, 0.0), GraphicsConstants.SIZE)
         val furthestCorner = corners.maxBy { c -> (c - pos).norm2() }!!

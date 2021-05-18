@@ -46,7 +46,7 @@ class OpenGLGraphicsManager : GraphicsManager {
         GLFW.glfwShowWindow(window)
         GL.createCapabilities()
 
-        fontManager = OpenGLFontManager(256)
+        fontManager = OpenGLFontManager()
         fontManager.init()
     }
 
@@ -57,7 +57,6 @@ class OpenGLGraphicsManager : GraphicsManager {
     }
 
     override fun render() {
-        fontManager.drawString("Sphinx of black quartz, judge my vow.", Vector2D(-1.0, 0.0), Vector2D(2.0, 1.0))
         GLFW.glfwSwapBuffers(window)
         GLFW.glfwPollEvents()
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
@@ -77,6 +76,18 @@ class OpenGLGraphicsManager : GraphicsManager {
         eventQueue.clear()
         events.add(KeyEvent(KeyEvent.Key.None, getMousePos()))
         return events
+    }
+
+    override fun labelCircle(pos: Vector2D, radius: Double, string: String, color: Vector3D) {
+        val p = gameToWindowPos(pos)
+        val s = gameToWindowSize(Vector2D(radius, radius))
+        fontManager.drawString(string, p, s.x, color)
+    }
+
+    override fun labelRectangle(pos: Vector2D, size: Vector2D, string: String, color: Vector3D) {
+        val p = gameToWindowPos(pos)
+        val s = gameToWindowSize(size)
+        fontManager.drawString(string, p, s, color)
     }
 
     override fun fillCircle(pos: Vector2D, radius: Double, color: Vector3D) {

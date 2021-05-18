@@ -15,4 +15,6 @@ interface GraphicsManager {
 
     fun fillCircle(pos: Vector2D, radius: Double, color: Vector3D)
     fun outlineCircle(pos: Vector2D, innerRadius: Double, radius: Double, color: Vector3D)
+    fun labelCircle(pos: Vector2D, radius: Double, string: String, color: Vector3D)
+    fun labelRectangle(pos: Vector2D, size: Vector2D, string: String, color: Vector3D)
 }

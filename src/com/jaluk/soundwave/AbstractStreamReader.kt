@@ -11,6 +11,7 @@ abstract class AbstractStreamReader : AudioReader {
     private var data: DoubleArray = DoubleArray(0)
     private lateinit var clipStream: AudioInputStream
     private lateinit var clip: Clip
+    private lateinit var file: File
 
     private fun preparePlay(file: File) {
         clipStream = streamFile(file)
@@ -22,6 +23,7 @@ abstract class AbstractStreamReader : AudioReader {
     abstract fun streamFile(file: File): AudioInputStream
 
     override fun readFile(file: File) {
+        this.file = file
         val audioInputStream = streamFile(file)
 
         val bytesPerFrame = audioInputStream.format.frameSize
@@ -74,6 +76,7 @@ abstract class AbstractStreamReader : AudioReader {
     override fun stop() {
         clip.stop()
         clip.framePosition = 0
+        preparePlay(file)
     }
 
     override fun getCurrentFrame(): Int {

@@ -7,6 +7,7 @@ class GameBoard {
     private var ripples: MutableList<Ripple> = ArrayList()
     private var transition: Ripple? = null
     private var missed = 0
+    var label = ""
 
     fun update(delta: Double) {
         for (b in bubbles) {
@@ -46,22 +47,27 @@ class GameBoard {
         }
 
         for (b in popList) {
-            popBubble(b)
+            val r = b.pop()
+            r.pos = b.popPos!!
+            ripples.add(r)
+            bubbles.remove(b)
         }
     }
 
     private fun popBubble(b: Bubble) {
         bubbles.remove(b)
         val newRipple = b.pop()
+        val visualRadius = b.visualRadius()
         if (!hasCollision()) {
             val i = ripples.size
             ripples.add(newRipple)
-            val collision = collidesWith(i) ?: return
+            val collision = ripples.firstOrNull { r -> (r.pos - newRipple.pos).norm() > r.radius } ?: return
             val diff = collision.pos - b.pos
-            if (diff.norm() < b.radius) {
+            if (diff.norm() < visualRadius) {
                 newRipple.pos = collision.pos
-            } else if (diff.norm() - collision.radius <= b.radius) {
-                newRipple.pos += diff.normalized()
+            } else if (diff.norm() - collision.radius <= visualRadius) {
+                val offset = (visualRadius * 0.1) + (diff.norm() - collision.radius)
+                newRipple.pos += diff.normalized() * offset
             }
         }
     }
@@ -86,6 +92,7 @@ class GameBoard {
         bubbles.clear()
         missed = 0
         transition = null
+        label = ""
     }
 
     fun addBubble(b: Bubble) {
@@ -154,6 +161,10 @@ class GameBoard {
         for (b in bubbles) {
             b.render(gm)
         }
+
+        gm.labelRectangle(Vector2D(0.0, GraphicsConstants.SIZE.y), Vector2D(GraphicsConstants.SIZE.x, 0.5),
+            label, Vector3D(1.0, 1.0,1.0))
+
         transition?.render(gm)
     }
 }

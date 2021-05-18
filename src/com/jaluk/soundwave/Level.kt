@@ -6,6 +6,7 @@ import kotlin.random.Random
 
 object LevelConstants {
     const val distErrorAllowed = 1.0
+    const val travelRatio = 0.75
 }
 
 class Level(private val reader: AudioReader) {
@@ -14,6 +15,7 @@ class Level(private val reader: AudioReader) {
     private var samplesPerFFT = 0
 
     private var noteSpeed = 1.0
+    private var rippleSpeed = 1.0
     private var appearSpeed = 1.0
 
     private val smoothValue = 1E-2
@@ -98,6 +100,7 @@ class Level(private val reader: AudioReader) {
         val songLength = notes.size / realRate
         val avgDelta = totalDelta / songLength
         noteSpeed = 3.0 * avgDelta
+        rippleSpeed = avgDelta * avgDelta
         appearSpeed = avgDelta
         println(totalDelta)
         println(avgDelta)
@@ -108,15 +111,15 @@ class Level(private val reader: AudioReader) {
         var lastTime = 0.0
         val runningNotes = ArrayList<Note>()
         var runningDelta = 0.0
-        for (n in notes) {//.filter { n -> n.amplitude > 0.1 }) {
+        for (n in notes) {
             val time = n.index / realRate
             val timeDiff = time - lastTime
 
             val threshold = min(0.1, 0.2 / timeDiff)
             if (n.amplitude < threshold) continue
 
-            runningDelta += n.delta
             if (timeDiff < 0.25 || timeDiff < 1.0 / (filteredNotes.size + 1)) continue
+            runningDelta += n.delta
 
             runningNotes.add(n)
             val cutoff = min(0.5, 1 / timeDiff)
@@ -183,13 +186,13 @@ class Level(private val reader: AudioReader) {
             var popPos = Vector2D(r.nextDouble(1.0, GraphicsConstants.SIZE.x - 1),
                 r.nextDouble(1.0, GraphicsConstants.SIZE.y - 1))
 
-            val posDiff = (popPos - lastPos).norm() + LevelConstants.distErrorAllowed
-            val rippleTime = posDiff / noteSpeed
-            val actualTime = popTime - lastTime
-            val timeScale = rippleTime / (actualTime)
-            if (timeScale > 1) {
-                val diff = popPos - lastPos
-                popPos = lastPos + diff / timeScale
+            val time = popTime - lastTime
+            val allowedDist = rippleSpeed * time * LevelConstants.travelRatio - LevelConstants.distErrorAllowed
+            if (allowedDist <= 0) continue
+            val actualDist = (popPos - lastPos).norm()
+            if (allowedDist < actualDist) {
+                val diff = (popPos - lastPos).normalized()
+                popPos = lastPos + diff * allowedDist
             }
 
             val scale = (popTime - lastTime) * appearSpeed
@@ -199,7 +202,7 @@ class Level(private val reader: AudioReader) {
             val vel = velDir * noteSpeed
             val appearTime = popTime - (appearPos - popPos).norm() / vel.norm()
 
-            val b = Bubble(appearPos, vel, 1.0, tunes[n.frequency])
+            val b = Bubble(appearPos, vel, 1.0, rippleSpeed, tunes[n.frequency])
             b.popPos = popPos
             val appearIndex = (appearTime * realRate).toInt()
 

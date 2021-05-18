@@ -2,6 +2,7 @@ package com.jaluk.soundwave
 
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL30
 import java.awt.Color
 import java.awt.Font
 import java.awt.RenderingHints
@@ -9,9 +10,11 @@ import java.awt.image.BufferedImage
 import kotlin.collections.HashMap
 import kotlin.collections.set
 import kotlin.math.min
+import kotlin.math.sqrt
 
 
-class OpenGLFontManager(var size: Int) {
+class OpenGLFontManager {
+    val size = 512
     private lateinit var font: Font
     private var fontHeight: Int = 0
     private val glyphs = HashMap<Char, Glyph>()
@@ -76,6 +79,7 @@ class OpenGLFontManager(var size: Int) {
         val id = textureHandle.get()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, id)
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, co, w, h, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, pixels)
+        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D)
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0)
 
         val glyph = Glyph(id, w, h, 0, h, m.ascent)
@@ -83,7 +87,7 @@ class OpenGLFontManager(var size: Int) {
         return glyph
     }
 
-    fun drawString(s: String, pos: Vector2D, size: Vector2D) {
+    fun getStringSize(s: String): Vector2D {
         val lines = s.count { c -> c == '\n' } + 1
         val textHeight = lines * fontHeight
         var textWidth = Int.MAX_VALUE
@@ -92,9 +96,29 @@ class OpenGLFontManager(var size: Int) {
             textWidth = textWidth.coerceAtMost(width)
         }
 
-        val yScale = size.y / textHeight
-        val xScale = size.x / textWidth
+        return Vector2D(textWidth.toDouble(), textHeight.toDouble())
+    }
+
+    fun drawString(s: String, center: Vector2D, radius: Double, color: Vector3D) {
+        val unscaled = getStringSize(s)
+        val radicand = 1 / unscaled.norm2()
+        val scale = 2 * radius * sqrt(radicand)
+        val size = unscaled * scale
+        drawString(s, center - (size * 0.5), size, color)
+    }
+
+    fun drawString(s: String, pos: Vector2D, size: Vector2D, color: Vector3D) {
+        val unscaled = getStringSize(s)
+
+        val yScale = size.y / unscaled.y
+        val xScale = size.x / unscaled.x
         val scale = min(xScale, yScale).toFloat()
+
+        GL11.glEnable(GL11.GL_TEXTURE_2D)
+        GL11.glEnable(GL11.GL_BLEND)
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+
+        GL11.glColor3d(color.x, color.y, color.z)
 
         for (line in s.split('\n')) {
             var cursor = Vector2D(pos.x, pos.y)
@@ -103,6 +127,9 @@ class OpenGLFontManager(var size: Int) {
                 cursor += Vector2D(x=shift.toDouble())
             }
         }
+
+        GL11.glDisable(GL11.GL_TEXTURE_2D)
+        GL11.glDisable(GL11.GL_BLEND)
     }
 
     private fun drawChar(c: Char, pos: Vector2D, scale: Float): Float {
@@ -112,27 +139,20 @@ class OpenGLFontManager(var size: Int) {
         val drawX2 = drawX1 + g.w * scale
         val drawY2 = drawY1 + g.h * scale
 
-        GL11.glEnable(GL11.GL_TEXTURE_2D)
-        GL11.glEnable(GL11.GL_BLEND)
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, g.id)
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR)
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP)
 
         GL11.glBegin(GL11.GL_QUADS)
-        GL11.glColor3d(1.0, 1.0, 1.0)
         GL11.glTexCoord2f(0F, 1F); GL11.glVertex2f(drawX1, drawY1)
         GL11.glTexCoord2f(0F, 0F); GL11.glVertex2f(drawX1, drawY2)
         GL11.glTexCoord2f(1F, 0F); GL11.glVertex2f(drawX2, drawY2)
         GL11.glTexCoord2f(1F, 1F); GL11.glVertex2f(drawX2, drawY1)
         GL11.glEnd()
-
-        GL11.glDisable(GL11.GL_TEXTURE_2D)
-        GL11.glDisable(GL11.GL_BLEND)
 
         return g.w * scale
     }

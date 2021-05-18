@@ -1,27 +1,46 @@
 package com.jaluk.soundwave
 
-import kotlin.math.max
+import kotlin.math.ceil
 import kotlin.math.min
 
-class StatePlaying(private val level: Level, private val audio: AudioReader, private val auto: Boolean): GameState {
-    var prePlayFrames = level.firstFrame() - 3 * audio.getSampleRate()
-    var lastTime = Int.MIN_VALUE
-    var playing = false
-    var lastMissed = 0
-    var failureQuota = 0.05
+enum class PlayDifficulty {
+    Auto,
+    Zen,
+    Normal,
+    Hardcore
+}
 
-    var poppedSinceLastMiss = 100
-    var popped = 1
+class StatePlaying(private val level: Level, private val audio: AudioReader, private val difficulty: PlayDifficulty): GameState {
+    private var prePlayFrames = level.firstFrame() - 3 * audio.getSampleRate()
+    private var lastTime = Int.MIN_VALUE
+    private var playing = false
+    private var lastMissed = 0
+    private val failureQuota = when (difficulty) {
+        PlayDifficulty.Auto -> 1.0
+        PlayDifficulty.Zen -> 1.0
+        PlayDifficulty.Normal -> 0.02
+        PlayDifficulty.Hardcore -> 0.0
+    }
+
+    private var poppedSinceLastMiss = 100
+    private var popped = 1
 
     private fun updatePulseFactor(board: GameBoard) {
         var pulseFactor = 0.0
-        val allowMissed = failureQuota * level.getNoteCount()
+        val allowMissed = ceil(failureQuota * level.getNoteCount())
         if (allowMissed < lastMissed + 1) {
             pulseFactor = 1.0
         } else if (poppedSinceLastMiss < 1 / failureQuota) {
             pulseFactor = min(1.0, lastMissed.toDouble() / popped / failureQuota)
         }
         board.setPulseProperties(pulseFactor=pulseFactor)
+
+        board.label = when (difficulty) {
+            PlayDifficulty.Auto -> "Auto"
+            PlayDifficulty.Zen -> lastMissed.toString()
+            PlayDifficulty.Normal -> (allowMissed - lastMissed).toInt().toString()
+            PlayDifficulty.Hardcore -> ""
+        }
     }
 
     override fun update(delta: Double, board: GameBoard, events: List<KeyEvent>): GameState? {
@@ -30,7 +49,6 @@ class StatePlaying(private val level: Level, private val audio: AudioReader, pri
         for (e in events) {
             when (e.key) {
                 KeyEvent.Key.ESC -> {
-                    println(lastMissed)
                     return null
                 }
                 KeyEvent.Key.None -> {
@@ -38,8 +56,10 @@ class StatePlaying(private val level: Level, private val audio: AudioReader, pri
                     //if (pop) newPopped++
                 }
                 else -> {
-                    val pop = board.popAt(e.pos, null)
-                    if (pop) newPopped++
+                    if (difficulty != PlayDifficulty.Auto) {
+                        val pop = board.popAt(e.pos, null)
+                        if (pop) newPopped++
+                    }
                 }
             }
         }
@@ -72,7 +92,7 @@ class StatePlaying(private val level: Level, private val audio: AudioReader, pri
         }
 
         board.update(delta)
-        if (auto) board.autoPop()
+        if (difficulty == PlayDifficulty.Auto) board.autoPop()
 
         val pulseAmount = level.getPulseAmount(frame)
         board.setPulseProperties(pulseAmount=pulseAmount)
@@ -83,11 +103,13 @@ class StatePlaying(private val level: Level, private val audio: AudioReader, pri
             updatePulseFactor(board)
         }
 
-        if (failureQuota * level.getNoteCount() < lastMissed) {
-            val nextState = StatePlaying(level, audio, auto)
+        if (ceil(failureQuota * level.getNoteCount()) < lastMissed) {
+            val nextState = StatePlaying(level, audio, difficulty)
             audio.stop()
+            board.label = ""
             return StateTransition(nextState)
         }
+
 
         if (frame >= audio.getData().size) {
             return null
