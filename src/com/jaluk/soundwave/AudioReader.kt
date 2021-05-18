@@ -6,10 +6,11 @@ interface AudioReader {
     fun supportedExtensions(): List<String>
     fun readFile(file: File)
     fun getSampleRate(): Double
-    fun getData(): DoubleArray
+    fun pollData(): DoubleArray
     fun play()
     fun stop()
     fun getCurrentFrame(): Int
+    fun maxFrame(): Int
 }
 
 fun constructAudioReader(name: String): AudioReader? {

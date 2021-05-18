@@ -59,7 +59,6 @@ class GameBoard {
         val newRipple = b.pop()
         val visualRadius = b.visualRadius()
         if (!hasCollision()) {
-            val i = ripples.size
             ripples.add(newRipple)
             val collision = ripples.firstOrNull { r -> (r.pos - newRipple.pos).norm() > r.radius } ?: return
             val diff = collision.pos - b.pos

@@ -12,6 +12,7 @@ abstract class AbstractStreamReader : AudioReader {
     private lateinit var clipStream: AudioInputStream
     private lateinit var clip: Clip
     private lateinit var file: File
+    private var maxFrame = 0
 
     private fun preparePlay(file: File) {
         clipStream = streamFile(file)
@@ -57,6 +58,7 @@ abstract class AbstractStreamReader : AudioReader {
 
         data = samples.toDoubleArray()
         sampleRate = audioInputStream.format.frameRate.toDouble()
+        maxFrame = data.size
 
         preparePlay(file)
     }
@@ -65,8 +67,14 @@ abstract class AbstractStreamReader : AudioReader {
         return sampleRate
     }
 
-    override fun getData(): DoubleArray {
-        return data
+    override fun pollData(): DoubleArray {
+        val out = data.clone()
+        data = DoubleArray(0)
+        return out
+    }
+
+    override fun maxFrame(): Int {
+        return maxFrame
     }
 
     override fun play() {

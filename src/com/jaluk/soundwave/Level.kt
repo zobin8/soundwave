@@ -21,11 +21,10 @@ class Level(private val reader: AudioReader) {
     private val smoothValue = 1E-2
 
     private var waitingBubbles: List<WaitingBubble> = ArrayList()
-    private var pulses: MutableList<Double> = ArrayList()
 
     private class Note(var frequency: Int, var amplitude: Double, var index: Int, var delta: Double)
 
-    private class WaitingBubble(val index: Int, val bubble: Bubble)
+    private class WaitingBubble(val index: Int, val bubble: Bubble, val amplitude: Double)
 
     private fun fft(): List<Note> {
         val samplesPerFFTLog = log2(reader.getSampleRate() / fftRate).toInt()
@@ -34,7 +33,7 @@ class Level(private val reader: AudioReader) {
         val timeSmoothing = smoothValue.pow(1 / realRate)
 
         val fft = FFT(samplesPerFFT)
-        val data = reader.getData()
+        val data = reader.pollData()
         var prevBins = DoubleArray(8)
         val fftData = ArrayList<Note>()
 
@@ -86,11 +85,7 @@ class Level(private val reader: AudioReader) {
             n.delta /= divisor
             runningPulse *= timeSmoothing
             runningPulse += (1 - timeSmoothing) * log2(n.delta + 1)
-            pulses.add(runningPulse)
         }
-
-        val maxDelta = pulses.max()!!
-        pulses.forEachIndexed { index, d -> pulses[index] = d / maxDelta }
 
         return fftData
     }
@@ -206,7 +201,7 @@ class Level(private val reader: AudioReader) {
             b.popPos = popPos
             val appearIndex = (appearTime * realRate).toInt()
 
-            bubbles.add(WaitingBubble(appearIndex, b))
+            bubbles.add(WaitingBubble(appearIndex, b, n.amplitude))
 
             lastPos = popPos
             lastTime = popTime
@@ -221,12 +216,15 @@ class Level(private val reader: AudioReader) {
         notes = filterNotes(notes)
         applyColors(notes)
         waitingBubbles = makeBubbles(notes)
+        println(waitingBubbles.size)
     }
 
     fun getPulseAmount(frame: Int): Double {
         val index = frame / samplesPerFFT
-        if (index < 0 || index >= pulses.size) return 0.0
-        return pulses[index]
+        val closest = waitingBubbles.minBy { b -> abs(index - b.index) }!!
+        val amplitude = min(1.0, closest.amplitude)
+        val timeLoss = 1 / (1 + 0.1 * abs(index - closest.index))
+        return amplitude * timeLoss
     }
 
     fun getDataBetween(startFrame: Int, endFrame: Int): List<Bubble> {

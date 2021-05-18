@@ -14,7 +14,7 @@ import kotlin.math.sqrt
 
 
 class OpenGLFontManager {
-    val size = 512
+    val size = 256
     private lateinit var font: Font
     private var fontHeight: Int = 0
     private val glyphs = HashMap<Char, Glyph>()
@@ -87,7 +87,7 @@ class OpenGLFontManager {
         return glyph
     }
 
-    fun getStringSize(s: String): Vector2D {
+    private fun getStringSize(s: String): Vector2D {
         val lines = s.count { c -> c == '\n' } + 1
         val textHeight = lines * fontHeight
         var textWidth = Int.MAX_VALUE

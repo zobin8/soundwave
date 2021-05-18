@@ -111,7 +111,7 @@ class StatePlaying(private val level: Level, private val audio: AudioReader, pri
         }
 
 
-        if (frame >= audio.getData().size) {
+        if (frame >= audio.maxFrame()) {
             return null
         }
 

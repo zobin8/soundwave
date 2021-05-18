@@ -68,7 +68,7 @@
     <configuration name="com.jaluk.soundwave.MainKt" type="JetRunConfigurationType" factoryName="Kotlin">
       <module name="soundwave" />
       <option name="VM_PARAMETERS" value="" />
-      <option name="PROGRAM_PARAMETERS" value="fire.wav" />
+      <option name="PROGRAM_PARAMETERS" value="epitaph.wav" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="ALTERNATIVE_JRE_PATH" value="11.0.3" />
       <option name="PASS_PARENT_ENVS" value="true" />
