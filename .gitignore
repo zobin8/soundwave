@@ -5,3 +5,5 @@ out
 *.wav
 .idea/misc.xml
 *.mp3
+.idea
+.gradle
