@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 class KeyEvent(val key: Key, val pos: Vector2D) {
     enum class Key {

@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 import com.meapsoft.FFT
 import kotlin.math.*

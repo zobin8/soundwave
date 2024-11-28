@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 object GraphicsConstants {
     val SIZE = Vector2D(16.0, 9.0)

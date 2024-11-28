@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 import kotlin.math.pow
 

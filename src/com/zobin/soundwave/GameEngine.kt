@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 class GameEngine(private val graphicsManager: GraphicsManager, private var gameState: GameState, private var gameBoard: GameBoard) {
     private var shouldTerminate: Boolean = false

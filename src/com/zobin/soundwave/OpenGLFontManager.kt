@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11

@@ -1,4 +1,4 @@
-package com.jaluk.soundwave
+package com.zobin.soundwave
 
 class StateTransition(private val nextState: GameState): GameState {
     private var initialized = false
